@@ -43,7 +43,7 @@ public class WeatherRecommendationService {
     public RecommendationResponse find(Long id) {
         WeatherRecommendation weatherRecommendation = recommendationRepository.findById(id)
                 .orElseThrow(() ->
-                        new NotFoundException("[WeatherRecommendationService] Recommendation Not Found, id = " + id, HttpStatusCode.valueOf(404)));
+                        new NotFoundException("Recommendation Not Found, id = " + id, HttpStatusCode.valueOf(404)));
         return RecommendationResponse.builder()
                 .id(weatherRecommendation.getId())
                 .cityName(weatherRecommendation.getAddress())

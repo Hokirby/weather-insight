@@ -21,11 +21,11 @@ public class WeatherService {
 
     // 외부 api 에서 주소값과 날씨 정보 조회
     public WeatherInfoResponse getWeatherInfo(String address) {
-        // 1. 주소 → 위도/경도 변환
+        // 주소 → 위도/경도 변환
         WeatherAnalysisData.Coordinates coordinates = geocoderClient.getCoordinates(address);
         log.info("[WeatherService] 좌표 변환 완료: {}", coordinates);
 
-        // 2. 위도/경도 기반 날씨 데이터 수집
+        // 위도/경도 기반 날씨 데이터 수집
         WeatherAnalysisData.WeatherData weatherData = openWeatherClient.getCurrentWeather(coordinates);
         log.info("[WeatherService] 날씨 데이터 수집 완료: {}", weatherData);
 
