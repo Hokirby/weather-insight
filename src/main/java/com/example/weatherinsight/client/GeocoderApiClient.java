@@ -41,6 +41,7 @@ public class GeocoderApiClient {
                 .onStatus(HttpStatusCode::isError, (request, response) -> {
                         String body = new String(response.getBody().readAllBytes());
                         log.error("[Geocoder] Raw Response: {}", body);
+
                     throw new GeocoderApiException("Geocoder API Request Failed: " + body, response.getStatusCode());
                 })
                 .body(GeocoderResponse.class);

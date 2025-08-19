@@ -37,5 +37,6 @@ public class GeminiRequest {
     @Builder
     public static class GenerationConfig {
         private Double temperature;
+        private Integer maxOutputTokens;
     }
 }

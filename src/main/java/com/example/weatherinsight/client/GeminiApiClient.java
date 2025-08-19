@@ -32,7 +32,7 @@ public class GeminiApiClient {
     public String generateRequest(String prompt, Double temperature, Integer maxTokens) {
         GeminiRequest geminiRequest = createRequest(prompt, temperature, maxTokens);
 
-        URI uri = buildUri();
+        URI uri = buildApiUri();
         log.info("[Gemini] API URI: {}", uri);
 
         return restClient.post()
@@ -52,6 +52,7 @@ public class GeminiApiClient {
                     }
                     GeminiResponse geminiResponse = response.bodyTo(GeminiResponse.class);
                     log.info("[Gemini] Response: {}", geminiResponse);
+
                     String generatedText = extractText(geminiResponse);
                     log.info("[Gemini] Text Extracted: {}", generatedText);
                     return generatedText;
@@ -69,6 +70,7 @@ public class GeminiApiClient {
 
         GeminiRequest.GenerationConfig config = GeminiRequest.GenerationConfig.builder()
                 .temperature(temperature)
+                .maxOutputTokens(maxTokens)
                 .build();
 
         return GeminiRequest.builder()
@@ -79,18 +81,18 @@ public class GeminiApiClient {
 
     public String extractText(GeminiResponse response) {
         if (response == null || response.getCandidates() == null || response.getCandidates().isEmpty()) {
-            log.warn("Empty Response From Gemini");
+            log.warn("[Gemini] Empty Response From Gemini");
             return "";
         }
         GeminiResponse.Candidate candidate = response.getCandidates().get(0);
         if (candidate.getContent() == null || candidate.getContent().getParts() == null || candidate.getContent().getParts().isEmpty()) {
-            log.warn("No Content parts in Gemini API Response");
+            log.warn("[Gemini] No Content parts in Gemini API Response");
             return "";
         }
         return candidate.getContent().getParts().get(0).getText();
     }
 
-    private URI buildUri() {
+    private URI buildApiUri() {
         return UriComponentsBuilder.fromUriString(apiUrl)
                 .queryParam("key", apiKey)
                 .build()

@@ -44,7 +44,7 @@ public class WeatherController {
             return ResponseEntity.internalServerError().body(ApiResponseDto.<WeatherInfoResponse>builder()
                     .success(false)
                     .message("날씨 정보 조회에 실패했습니다")
-                            .errorCode(e.getClass().getName())
+                    .errorCode(e.getClass().getName())
                     .timestamp(LocalDateTime.now())
                     .build());
         }
@@ -145,6 +145,7 @@ public class WeatherController {
         }
     }
 
+    // 날씨 분석/추천 조회
     @GetMapping("/analysis/{id}")
     public ResponseEntity<ApiResponseDto<RecommendationResponse>> getRecommendation(@PathVariable Long id) {
         log.info("[WeatherController] Received Recommendation Id: {}", id);

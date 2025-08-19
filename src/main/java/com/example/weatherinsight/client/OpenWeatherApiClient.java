@@ -12,6 +12,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 @Slf4j
@@ -28,14 +29,9 @@ public class OpenWeatherApiClient {
     private String apiKey;
 
     public WeatherAnalysisData.WeatherData getCurrentWeather(WeatherAnalysisData.Coordinates coordinates) {
-        String uri = UriComponentsBuilder.fromUriString(apiUrl)
-                .queryParam("lat", coordinates.getLat())
-                .queryParam("lon", coordinates.getLon())
-                .queryParam("units","metric")
-                .queryParam("lang","kr")
-                .queryParam("appid", apiKey)
-                .toUriString();
+        URI uri = buildApiUri(coordinates.getLat(), coordinates.getLon());
         log.info("[Open-Weather] URi: {}", uri);
+
         return restClientBuilder.build()
                 .get()
                 .uri(uri)
@@ -53,11 +49,23 @@ public class OpenWeatherApiClient {
                    }
                     OpenWeatherResponse openWeatherResponse = response.bodyTo(OpenWeatherResponse.class);
                     log.info("[Open-Weather] Response: {}", openWeatherResponse);
+
                     return WeatherAnalysisData.WeatherData.builder()
                             .temperature(openWeatherResponse.getMain().getTemp())
                             .feelsLike(openWeatherResponse.getMain().getFeels_like())
                             .description(openWeatherResponse.getWeather().get(0).getDescription())
                             .build();
                 });
+    }
+
+    private URI buildApiUri(Double latitude, Double longitude) {
+        return UriComponentsBuilder.fromUriString(apiUrl)
+                .queryParam("lat", latitude)
+                .queryParam("lon", longitude)
+                .queryParam("units","metric")
+                .queryParam("lang","kr")
+                .queryParam("appid", apiKey)
+                .build()
+                .toUri();
     }
 }
