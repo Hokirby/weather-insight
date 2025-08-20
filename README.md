@@ -1,6 +1,6 @@
 # WeatherInsight
 
-AI 기반 날씨 추천 및 분석 플랫폼 - 위치 기반 날씨 조회, AI 추천, 로그 관리까지 제공하는 통합 웹 서비스
+AI 기반 날씨 추천 및 분석 플랫폼 - 위치 기반 날씨 조회, AI 추천을 제공하는 통합 웹 서비스
 
 ## 🚀 주요 기능
 
@@ -14,7 +14,7 @@ AI 기반 날씨 추천 및 분석 플랫폼 - 위치 기반 날씨 조회, AI �
 
 ```
 ┌─────────────────┐       ┌────────────────────────┐       ┌────────────────────┐
-│   Web Client    │◀─────▶│    Weather Insight     │◀─────▶│   External APIs    │
+│   Web Client    │◀─────▶│    Weather Insight    │◀─────▶│   External APIs   │
 │  (Web Browser)  │       │   (Spring Boot App)    │       │ ────────────────── │
 └─────────────────┘       └────────────────────────┘       │ - Geocoder API     │
          ▲                ┌────────────────────────┐       │ - OpenWeather API  │
@@ -65,7 +65,7 @@ cd weather-insight
 - `GET /api/v1/weather` - 주소 입력 → 좌표 변환 → 날씨 조회
 - `POST /api/v1/weather` - 날씨 정보 저장
 - `GET /api/v1/weather/{id}` - 특정 날씨 정보 조회
-- `POST /api/v1/weather/{id}` - 날씨 정보 조회 -> Gemini 추천 생송
+- `POST /api/v1/weather/{id}` - 날씨 정보 조회 -> Gemini 추천 생성
 
 #### 추천/분석
 
@@ -94,8 +94,8 @@ open-weather.api.url=https://api.openweathermap.org/data/2.5/weather
 ```json
 {
   "success": true,
-  "message": 응답 메세지,
-  "data": 응답 본문,
+  "message": "응답 메세지",
+  "data": "응답 본문",
   "timestamp": "2025-08-18T17:12:31.969007",
   "errorCode": null
 }
@@ -105,9 +105,9 @@ open-weather.api.url=https://api.openweathermap.org/data/2.5/weather
 ```json
 {
   "success": false,
-  "message": 응답 메세지,
+  "message": "응답 메세지",
   "timestamp": "2025-08-18T17:12:31.969007",
-  "errorCode": 에러 코드
+  "errorCode": "예외 클래스"
 }
 ```
 
@@ -116,7 +116,7 @@ open-weather.api.url=https://api.openweathermap.org/data/2.5/weather
 ### 주요 에러 타입
 
 - `GeocoderApiException`: 주소 → 좌표 변환 실패
-- `OpenWeatherApiException`: 날씨 API 호출 실패
+- `OpenWeatherApiException`: 날씨 API 호출 조회 실패
 - `GeminiApiException`: Gemini AI 추천 생성 실패
 - `NotFoundException`: 데이터 조회 실패
 
@@ -127,7 +127,8 @@ open-weather.api.url=https://api.openweathermap.org/data/2.5/weather
 
 ## 📚 상세 문서
 
-[**Weather Insight API 문서**](Api.md)
+[**Weather Insight API 문서**](docs/api.md)  
+[**기술적 의사 결정 과정 문서**](docs/decision-making.md)
 
 ## 🛠️ 개발
 
