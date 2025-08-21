@@ -41,7 +41,7 @@ public class WeatherInfoService {
 
     public WeatherInfoResponse find(Long id) {
         WeatherInfo weatherInfo = weatherInfoRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("WeatherInfo Not Found With ID: {}"+ id, HttpStatusCode.valueOf(404)));
+                .orElseThrow(() -> new NotFoundException("WeatherInfo Not Found With ID: "+ id, HttpStatusCode.valueOf(404)));
 
         return WeatherInfoResponse.builder()
                 .id(weatherInfo.getId())

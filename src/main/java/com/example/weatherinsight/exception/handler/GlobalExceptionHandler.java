@@ -19,13 +19,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponseDto<String>> handleRuntimeException(RuntimeException e) {
-        return ResponseEntity.internalServerError().body(ApiResponseDto.error(e.getMessage()));
+        return ResponseEntity.internalServerError().body(ApiResponseDto.error(e.getMessage(), e.getClass().getName()));
 
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseDto<String>> handleException(Exception e) {
-        return ResponseEntity.internalServerError().body(ApiResponseDto.error("Exception Unexpected: ", e.getMessage()));
+        return ResponseEntity.internalServerError().body(ApiResponseDto.error(("Exception Unexpected: "+ e.getMessage()), e.getClass().getName()));
 
     }
 }

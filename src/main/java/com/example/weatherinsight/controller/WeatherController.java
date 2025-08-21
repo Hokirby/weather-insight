@@ -140,6 +140,7 @@ public class WeatherController {
             return ResponseEntity.internalServerError().body(ApiResponseDto.<RecommendationResponse>builder()
                     .success(false)
                     .message("추천 저장에 실패했습니다.")
+                    .errorCode(e.getClass().getName())
                     .timestamp(LocalDateTime.now())
                     .build());
         }
@@ -163,6 +164,7 @@ public class WeatherController {
                     .body(ApiResponseDto.<RecommendationResponse>builder()
                             .success(false)
                             .message("저장된 추천 조회에 실패했습니다.")
+                            .errorCode(e.getClass().getName())
                             .timestamp(LocalDateTime.now())
                             .build());
         }

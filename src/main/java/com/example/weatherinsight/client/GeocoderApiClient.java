@@ -51,7 +51,7 @@ public class GeocoderApiClient {
 
         // 응답 null check
         if (geocoderResponse.getResponse() == null) {
-            throw new GeocoderApiException("Invalid Geocoder API Response For : " + address, HttpStatusCode.valueOf(404));
+            throw new GeocoderApiException("Invalid Geocoder API Response For: " + address, HttpStatusCode.valueOf(404));
         }
 
         // 상태 코드 확인 (예: NOT_FOUND → 예외 처리)
