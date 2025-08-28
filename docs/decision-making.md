@@ -9,17 +9,69 @@
 ### 결정
 현재는 별도의 사용자 로그인 기능을 구현하지 않았습니다. 대신, 모든 사용자가 서비스를 이용할 수 있도록 모든 요청을 허용했습니다. 이는 보안에 대한 고려를 완전히 배제한 것이 아니라, 사용자 인증만 생략했다는 것을 보여주기 위함입니다. 추후 서비스 확장 시 익명 로그인(AnonymousAuthentication) 또는 정식 회원 로그인 기능을 추가하여 확장성을 확보할 계획입니다.
 
-## 2. API 통신 방식: RestClient의 retrieve() vs exchange()
-   
+## 2. API 통신 방식: RestClient의 exchange()와 onStatus() 활용
+
 ### 배경 및 고민
-외부 API와의 통신을 위해 Spring 6부터 지원하는 **RestClient**를 사용하면서 retrieve()와 exchange() 메서드 중 어떤 것을 사용할지 고민했습니다.
+
+외부 API와의 통신을 위해 Spring 6부터 지원하는 RestClient를 도입했습니다.
+초기에는 retrieve()와 exchange() 중 어느 메서드를 사용할지 고민했지만, 실제로는 API별 특성에 따라 다른 방식을 선택했습니다.
 
 ### 결정
-OpenWeather API와 같은 일반적인 API 호출은 응답 본문(Body)만 필요하고 예외 처리가 명확하여 retrieve() 메서드를 주로 사용했습니다. 하지만 Gemini API와 Geocoder API의 경우, 응답 데이터에 대한 세밀한 로깅과 에러 핸들링이 중요하다고 판단했습니다. 따라서, 응답 전체를 직접 제어할 수 있는 exchange() 메서드를 사용하여, 에러 발생 시 상태 코드와 응답 바디를 상세히 로깅하고 디버깅 효율을 높였습니다.
 
-- `retrieve()`: 간결하게 응답 본문만 가져올 때 유용하며, onStatus()를 통해 상태 코드별 예외 처리가 가능합니다.
+#### Geocoder API
++ 주소 → 좌표 변환 과정에서 예외 케이스가 매우 다양했습니다. 
++ 예: 잘못된 주소 입력, 응답 구조 불일치, 상태 코드 에러, 좌표 없음 등. 
++ 따라서 retrieve() 기반으로 onStatus()를 적극 활용하여 상태 코드별 예외 처리를 세분화했습니다. 
++ 이후 추가적으로 응답 본문 null 체크 / 상태 값 검증 / 좌표 존재 여부 검증 등을 단계별로 수행했습니다.
 
-- `exchange()`: 응답의 헤더, 상태 코드, 바디 등 전체를 세밀하게 제어할 수 있어 복잡한 커스텀 로직이나 상세한 로깅이 필요할 때 적합합니다.
+#### Gemini API / OpenWeather API
++ 응답 구조는 비교적 단순하지만, 에러 발생 시 상세한 로깅이 필요했습니다. 
++ 그래서 응답 전체(상태 코드·헤더·바디)를 직접 다룰 수 있는 **exchange()** 를 사용했습니다. 
++ 이를 통해 실패 응답의 원문을 그대로 로깅하여 디버깅 효율을 높였습니다.
+
+코드 예시
+📍 Geocoder API – retrieve() + onStatus() 기반
+```java
+GeocoderResponse geocoderResponse = restClient.get()
+        .uri(uri)
+        .accept(MediaType.APPLICATION_JSON)
+        .acceptCharset(StandardCharsets.UTF_8)
+        .retrieve()
+        .onStatus(HttpStatusCode::isError, (request, response) -> {
+            String body = new String(response.getBody().readAllBytes());
+            log.error("[Geocoder] Raw Response: {}", body);
+
+            throw new GeocoderApiException("Geocoder API Request Failed: " + body, response.getStatusCode());
+        })
+        .body(GeocoderResponse.class);
+
+// 이후 Null 체크 + 상태 코드 검증 + 좌표 존재 여부 확인
+```
+📍 Gemini API - exchange() 기반
+```java
+return restClient.post()
+                .uri(uri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(geminiRequest)
+                .exchange((request, response) -> {
+                    if (response.getStatusCode().isError()) {
+                        String errorBody = "";
+                        try {
+                            errorBody = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
+                        } catch (IOException e) {
+                            log.error("[Gemini] Error Body Read Failed: ", e);
+                        }
+                        log.error("[Gemini] Request Failed ({}): {}", response.getStatusCode(), errorBody);
+                        throw new GeminiApiException("Gemini Request Failed: " + errorBody, response.getStatusCode());
+                    }
+                    GeminiResponse geminiResponse = response.bodyTo(GeminiResponse.class);
+                    log.info("[Gemini] Response: {}", geminiResponse);
+
+                    String generatedText = extractText(geminiResponse);
+                    log.info("[Gemini] Text Extracted: {}", generatedText);
+                    return generatedText;
+                });
+```
 
 ## 3. 데이터베이스 저장 방식: JSON 타입 컬럼 활용
 
