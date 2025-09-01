@@ -49,7 +49,7 @@ cd weather-insight
 ### 2. 실행
 ```bash
 cd weather-insight
-./mvnw spring-boot:run
+./gradlew spring-boot:run
 ```
 ### 3. 접속
 
